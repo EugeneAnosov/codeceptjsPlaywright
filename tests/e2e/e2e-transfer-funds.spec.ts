@@ -1,28 +1,30 @@
-import { test, expect} from "@playwright/test";
+import { test } from "@playwright/test";
+import { LoginPage } from "../../page-objects/LoginPage";
+import { HomePage } from "../../page-objects/HomePage";
+import { NavBar } from "../../page-objects/components/NavBar";
+import { TransferFunds } from "../../page-objects/TransferFunds";
 
-test.skip('Transfer Funds and Make Payments', () => {
+test.describe('Transfer Funds and Make Payments', () => {
+    let loginPage: LoginPage
+    let homePage: HomePage
+    let navBar: NavBar
+    let transferFunds: TransferFunds
+
     test.beforeEach(async ({ page }) => {
-        await page.goto('http://zero.webappsecurity.com/index.html')
-        await page.click('#signin_button')
-        await page.type('#user_login', 'username')
-        await page.type('#user_password', 'password')
-        await page.click('text=Sign in')
+        loginPage = new LoginPage(page)
+        homePage = new HomePage(page)
+        navBar = new NavBar(page)
+
+        await homePage.visit()
+        await homePage.clickOnSignin()
+        await loginPage.login('username', 'password')
     })
 
-    test('Transfer Funds', async ({ page }) => {
-        await page.click('#transfer_funds_tab')
-        await page.selectOption('#tf_fromAccountId', '2')
-        await page.selectOption('#tf_toAccountId', '3')
-        await page.type('#tf_amount', '500')
-        await page.type('#tf_description', 'Test message')
-        await page.click('#btn_submit')
-
-        const boardHeader = await page.locator('h2.board-header')
-        await expect(boardHeader).toContainText('Verify')
-
-        await page.click('#btn_submit')
-
-        const message = await page.locator('.alert-success')
-        await expect(message).toContainText('You succesfully submitted your transaction.')
+    test('Transfer Funds', async ({}) => {
+        await navBar.clickOnTab('Transfer Funds')
+        await transferFunds.createTransfer()
+        await transferFunds.assertBoardMessage()
+        await transferFunds.submitTransfer()
+        await transferFunds.assertSuccessMessage()
     })
 })
