@@ -1,31 +1,30 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
+import {HomePage} from "../../page-objects/HomePage";
+import {FeedbackPage} from "../../page-objects/FeedbackPage";
 
-test.describe.parallel('Feedback Form', () => {
-    test.beforeEach(async ({ page }) => {
-        await page.goto('http://zero.webappsecurity.com/')
-        await page.click('#feedback')
+test.describe.parallel.only('Feedback Form', () => {
+
+    let homepage: HomePage
+    let feedbackPage: FeedbackPage
+
+    test.beforeEach(async ({page}) => {
+        homepage = new HomePage(page)
+        feedbackPage = new FeedbackPage(page)
+
+        await homepage.visit()
+        await homepage.clickOnFeedbackLink()
     })
 
     // Reset Feedback Form
-    test('Reset Feedback Form', async ({ page }) => {
-        await page.type('#name', 'some name')
-        await page.type('#email', 'some email@email.com')
-        await page.type('#subject', 'some subject')
-        await page.type('#comment', 'some comment')
-        await page.click("input[name='clear']")
-
-        const nameInput = await page.locator('#name')
-        const commentInput = await page.locator('#comment')
-        await expect(nameInput).toBeEmpty()
-        await expect(commentInput).toBeEmpty()
+    test('Reset Feedback Form', async ({}) => {
+        await feedbackPage.fillForm('name', 'email@email.com', 'subject', 'comment')
+        await feedbackPage.resetForm()
+        await feedbackPage.assertReset()
     })
     // Submit Feedback Form
-    test('Submit Feedback form', async ({ page }) => {
-        await page.type('#name', 'some name')
-        await page.type('#email', 'some email@email.com')
-        await page.type('#subject', 'some subject')
-        await page.type('#comment', 'some comment')
-        await page.click("input[type='submit']")
-        await page.waitForSelector('#feedback-title')
+    test('Submit Feedback form', async ({}) => {
+        await feedbackPage.fillForm('name', 'email@email.com', 'subject', 'comment')
+        await feedbackPage.submitForm()
+        await feedbackPage.feedbackFormSent()
     })
 })
